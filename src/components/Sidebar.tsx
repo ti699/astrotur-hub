@@ -1,11 +1,10 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Bus, ShieldCheck, LifeBuoy, ArrowUpRight, X } from "lucide-react";
+import { Home, ShieldCheck, LifeBuoy, ArrowUpRight, X } from "lucide-react";
 import { SYSTEMS, openSystem } from "@/config/systems";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Início", to: "/", icon: Home },
-  { label: "Frota", to: "/frota", icon: Bus },
 ];
 
 const systemItems = [
