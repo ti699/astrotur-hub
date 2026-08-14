@@ -151,3 +151,18 @@
     color: var(--color-foreground);
   }
 }
+
+@theme inline {
+  --color-neutral-mid: var(--neutral-mid);
+  --color-success: var(--success);
+  --font-sans: var(--font-sans);
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
