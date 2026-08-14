@@ -2,14 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LifeBuoy, ShieldCheck } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { SystemCard } from "@/components/SystemCard";
-import { FleetCard } from "@/components/FleetCard";
-import { StatCard } from "@/components/StatCard";
 import { QuickAccess } from "@/components/QuickAccess";
 import { SYSTEMS } from "@/config/systems";
 import {
   currentUser,
-  featuredVehicle,
-  fleetStats,
   helpdeskMetrics,
   patriguardMetrics,
 } from "@/data/mockData";
@@ -21,7 +17,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Acesso central aos sistemas internos da Astrotur: PatriGuard, HelpDesk e informações da frota.",
+          "Acesso central aos sistemas internos da Astrotur: PatriGuard e HelpDesk.",
       },
       { property: "og:title", content: "Portal Astrotur — Portal Corporativo" },
       {
@@ -76,23 +72,6 @@ function Dashboard() {
           </div>
         </section>
 
-        <section>
-          <div className="mb-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Frota Astrotur
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Acompanhe um dos veículos da nossa operação.
-            </p>
-          </div>
-          <FleetCard vehicle={featuredVehicle} />
-
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {fleetStats.map((s) => (
-              <StatCard key={s.label} stat={s} />
-            ))}
-          </div>
-        </section>
 
         <QuickAccess />
       </div>

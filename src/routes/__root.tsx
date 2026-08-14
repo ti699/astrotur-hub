@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Portal corporativo da Astrotur Viagens e Turismo: acesso a PatriGuard, HelpDesk e informações da frota.",
+          "Portal corporativo da Astrotur Viagens e Turismo: acesso a PatriGuard e HelpDesk.",
       },
       { name: "author", content: "Astrotur Viagens e Turismo" },
       { property: "og:title", content: "Portal Astrotur" },
