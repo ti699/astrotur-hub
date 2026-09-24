@@ -5,10 +5,12 @@ import { SystemCard } from "@/components/SystemCard";
 import { QuickAccess } from "@/components/QuickAccess";
 import { SYSTEMS } from "@/config/systems";
 import {
-  currentUser,
-  helpdeskMetrics,
-  patriguardMetrics,
+  helpdeskMetricsAdmin,
+  helpdeskMetricsUser,
+  patriguardMetricsAdmin,
+  patriguardMetricsUser,
 } from "@/data/mockData";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,12 +33,18 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "Gestor";
+
+  const patriguardMetrics = isAdmin ? patriguardMetricsAdmin : patriguardMetricsUser;
+  const helpdeskMetrics = isAdmin ? helpdeskMetricsAdmin : helpdeskMetricsUser;
+
   return (
     <PortalLayout>
       <div className="mx-auto max-w-6xl space-y-10">
         <header>
           <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            Olá, {currentUser.name}
+            Olá, {user?.name ?? "Usuário"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Bem-vindo ao Portal Corporativo Astrotur. Acesse rapidamente os

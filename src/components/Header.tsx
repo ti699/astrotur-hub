@@ -1,7 +1,8 @@
 import { Bell, Menu, Search } from "lucide-react";
-import { currentUser } from "@/data/mockData";
+import { useAuth } from "@/lib/auth";
 
 export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
+  const { user } = useAuth();
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-card/90 px-4 backdrop-blur md:px-8">
       <button
@@ -34,12 +35,12 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
         <div className="flex items-center gap-3">
           <div className="hidden text-right sm:block">
             <p className="text-sm font-semibold leading-tight text-foreground">
-              {currentUser.name}
+              {user?.name ?? "Usuário"}
             </p>
-            <p className="text-xs text-muted-foreground">{currentUser.role}</p>
+            <p className="text-xs text-muted-foreground">{user?.role ?? ""}</p>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-            {currentUser.initials}
+            {user?.initials ?? "U"}
           </div>
         </div>
       </div>

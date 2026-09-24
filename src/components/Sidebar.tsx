@@ -1,7 +1,8 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, ShieldCheck, LifeBuoy, ArrowUpRight, X } from "lucide-react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Home, ShieldCheck, LifeBuoy, ArrowUpRight, X, LogOut } from "lucide-react";
 import { SYSTEMS, openSystem } from "@/config/systems";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
 
 const navItems = [
   { label: "Início", to: "/", icon: Home },
@@ -14,6 +15,13 @@ const systemItems = [
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate({ to: "/login" });
+  }
 
   return (
     <div className="flex h-full w-72 flex-col bg-sidebar text-sidebar-foreground">
@@ -86,11 +94,27 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </nav>
 
-      <div className="border-t border-sidebar-border px-6 py-5">
-        <p className="text-xs text-sidebar-foreground/50">
-          Astrotur Viagens e Turismo
-          <br />
-          Desde 1991
+      <div className="border-t border-sidebar-border px-4 py-4 space-y-3">
+        {user && (
+          <div className="flex items-center gap-3 px-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-sm font-semibold text-sidebar-primary-foreground">
+              {user.initials}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-semibold text-sidebar-accent-foreground">{user.name}</p>
+              <p className="truncate text-[11px] text-sidebar-foreground/55">{user.role}</p>
+            </div>
+          </div>
+        )}
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition-all hover:bg-sidebar-accent hover:text-destructive"
+        >
+          <LogOut className="h-4 w-4" />
+          Sair
+        </button>
+        <p className="px-3 text-[11px] text-sidebar-foreground/40">
+          Astrotur Viagens · Desde 1991
         </p>
       </div>
     </div>
