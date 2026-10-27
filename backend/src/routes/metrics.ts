@@ -51,7 +51,7 @@ export const metricsRoutes: FastifyPluginAsync = async (app) => {
   app.addHook("preHandler", app.authenticate);
 
   app.get("/", async (req) => {
-    const role = req.user.role;
+    const role: "gestor" | "usuario" = req.user.role === "gestor" ? "gestor" : "usuario";
     const scope = role === "gestor" ? "all" : "mine";
     const { rows } = await pool.query<{ email: string }>("SELECT email FROM users WHERE id = $1", [req.user.sub]);
     const email = rows[0]?.email ?? "";

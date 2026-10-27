@@ -23,8 +23,7 @@ export const SYSTEMS: Record<SystemKey, SystemConfig> = {
     key: "patrimonio",
     name: "Patrimônio Astrotur",
     category: "Gestão de Patrimônio",
-    description:
-      "Controle, organização e acompanhamento dos patrimônios da Astrotur.",
+    description: "Controle, organização e acompanhamento dos patrimônios da Astrotur.",
     url: env["VITE_PATRIMONIO_URL"] ?? "http://187.127.0.219:8081",
     ctaLabel: "Acessar Patrimônio Astrotur",
     external: true,
@@ -35,8 +34,7 @@ export const SYSTEMS: Record<SystemKey, SystemConfig> = {
     category: "Suporte e Chamados de TI",
     description:
       "Abra chamados, acompanhe solicitações e encontre suporte para problemas de tecnologia.",
-    url:
-      env["VITE_HELPDESK_URL"] ?? "https://astrotur-helpdesk.vercel.app/dashboard",
+    url: env["VITE_HELPDESK_URL"] ?? "http://187.127.0.219:8082",
     ctaLabel: "Acessar HelpDesk",
     external: true,
   },

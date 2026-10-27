@@ -40,7 +40,7 @@ Sistema de suporte e chamados de TI:
 
 **URL real:**
 
-https://astrotur-helpdesk.vercel.app/dashboard
+http://187.127.0.219:8082
 
 No card do HelpDesk, utilizar:
 
@@ -58,7 +58,7 @@ Acessar HelpDesk →
 
 Ao clicar no botão, direcionar o usuário para:
 
-https://astrotur-helpdesk.vercel.app/dashboard
+http://187.127.0.219:8082
 
 Abrir o sistema em uma nova aba.
 
@@ -124,7 +124,7 @@ Portal Astrotur
       │
       ├── PatriGuard → https://patriguard.vercel.app/
       │
-      └── HelpDesk → https://astrotur-helpdesk.vercel.app/dashboard
+      └── HelpDesk → http://187.127.0.219:8082
 ```
 
 Usar links externos normais e seguros.
@@ -162,7 +162,7 @@ export const SYSTEMS = {
   helpdesk: {
     name: "HelpDesk",
     description: "Suporte e Chamados de TI",
-    url: "https://astrotur-helpdesk.vercel.app/dashboard",
+    url: "http://187.127.0.219:8082",
   },
 };
 ```
@@ -199,7 +199,7 @@ https://patriguard.vercel.app/
 
 Link:
 
-https://astrotur-helpdesk.vercel.app/dashboard
+http://187.127.0.219:8082
 
 ---
 
@@ -229,7 +229,7 @@ Ao clicar em PatriGuard:
 
 Ao clicar em HelpDesk:
 
-→ abrir https://astrotur-helpdesk.vercel.app/dashboard
+→ abrir http://187.127.0.219:8082
 
 Não criar páginas duplicadas para esses sistemas.
 

@@ -1,4 +1,6 @@
 import { Bell, Menu, Search } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Settings } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
@@ -24,6 +26,14 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
       </div>
 
       <div className="ml-auto flex items-center gap-3 md:gap-5">
+        <Link
+          to="/configuracoes"
+          aria-label="Abrir configurações"
+          title="Configurações"
+          className="rounded-lg p-2 text-foreground transition-colors hover:bg-accent"
+        >
+          <Settings className="h-5 w-5" />
+        </Link>
         <button
           aria-label="Notificações"
           className="relative rounded-lg p-2 text-foreground transition-colors hover:bg-accent"
@@ -37,7 +47,7 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
             <p className="text-sm font-semibold leading-tight text-foreground">
               {user?.name ?? "Usuário"}
             </p>
-            <p className="text-xs text-muted-foreground">{user?.role ?? ""}</p>
+            <p className="text-xs text-muted-foreground">{user?.roleLabel ?? ""}</p>
           </div>
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
             {user?.initials ?? "U"}

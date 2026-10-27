@@ -1,11 +1,12 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Home, ShieldCheck, LifeBuoy, ArrowUpRight, X, LogOut } from "lucide-react";
+import { Home, ShieldCheck, LifeBuoy, ArrowUpRight, X, LogOut, Settings } from "lucide-react";
 import { SYSTEMS, openSystem } from "@/config/systems";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 
 const navItems = [
   { label: "Início", to: "/", icon: Home },
+  { label: "Configurações", to: "/configuracoes", icon: Settings },
 ];
 
 const systemItems = [
@@ -102,7 +103,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             </div>
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-sidebar-accent-foreground">{user.name}</p>
-              <p className="truncate text-[11px] text-sidebar-foreground/55">{user.role}</p>
+              <p className="truncate text-[11px] text-sidebar-foreground/55">{user.roleLabel}</p>
             </div>
           </div>
         )}

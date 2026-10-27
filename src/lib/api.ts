@@ -1,6 +1,6 @@
 const env = import.meta.env as Record<string, string | undefined>;
 
-export const API_URL = (env["VITE_API_URL"] ?? "http://localhost:3002").replace(/\/$/, "");
+export const API_URL = (env["VITE_API_URL"] ?? "http://187.127.0.219:3002").replace(/\/$/, "");
 
 const TOKEN_KEY = "astrotur_token";
 
@@ -44,7 +44,12 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new ApiError((data as { error?: string }).error ?? "Erro inesperado.", res.status);
+    throw new ApiError(
+      (data as { error?: string; message?: string }).error ??
+        (data as { message?: string }).message ??
+        "Erro inesperado.",
+      res.status,
+    );
   }
   return data as T;
 }

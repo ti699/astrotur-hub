@@ -7,13 +7,25 @@ import { config, corsOrigins } from "./config.js";
 import { pool } from "./db.js";
 import { authRoutes } from "./routes/auth.js";
 import { userRoutes } from "./routes/users.js";
+import { meRoutes } from "./routes/me.js";
 import { metricsRoutes } from "./routes/metrics.js";
 import type { Role } from "./db.js";
 
+// 1. Amplia a interface do JWT para trafegar sub, role, name e email
 declare module "@fastify/jwt" {
   interface FastifyJWT {
-    payload: { sub: string; role: Role };
-    user: { sub: string; role: Role };
+    payload: { 
+      sub: string; 
+      role: Role | string; 
+      name?: string; 
+      email?: string; 
+    };
+    user: { 
+      sub: string; 
+      role: Role | string; 
+      name?: string; 
+      email?: string; 
+    };
   }
 }
 
@@ -33,7 +45,7 @@ await app.register(helmet);
 await app.register(cors, {
   origin: corsOrigins,
   credentials: true,
-  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 });
 await app.register(rateLimit, { max: 100, timeWindow: "1 minute" });
@@ -42,6 +54,7 @@ await app.register(jwt, {
   sign: { expiresIn: config.JWT_EXPIRES_IN },
 });
 
+// Middleware de Autenticação Geral
 app.decorate("authenticate", async (req, reply) => {
   try {
     await req.jwtVerify();
@@ -50,14 +63,17 @@ app.decorate("authenticate", async (req, reply) => {
   }
 });
 
+// 2. Middleware Hierárquico: permite acesso para 'gestor' E 'master'
 app.decorate("requireGestor", async (req, reply) => {
   try {
     await req.jwtVerify();
   } catch {
     return reply.code(401).send({ error: "Não autenticado." });
   }
-  if (req.user.role !== "gestor") {
-    return reply.code(403).send({ error: "Acesso restrito a gestores." });
+  
+  const role = req.user.role?.toLowerCase();
+  if (role !== "gestor" && role !== "master") {
+    return reply.code(403).send({ error: "Acesso restrito a gestores e administradores." });
   }
 });
 
@@ -66,8 +82,10 @@ app.get("/api/health", async () => {
   return { status: "ok" };
 });
 
+// 3. Registro dos Plugins com seus respectivos prefixos
 await app.register(authRoutes, { prefix: "/api/auth" });
-await app.register(userRoutes, { prefix: "/api/users" });
+await app.register(meRoutes, { prefix: "/api/me" });
+await app.register(userRoutes, { prefix: "/api/admin/users" });
 await app.register(metricsRoutes, { prefix: "/api/metrics" });
 
 app.setErrorHandler((err: Error & { statusCode?: number; validation?: unknown }, req, reply) => {

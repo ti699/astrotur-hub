@@ -2,9 +2,11 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { api, ApiError, getToken, setToken } from "@/lib/api";
 
 export interface AuthUser {
+  id?: string;
   name: string;
   email: string;
-  role: string;
+  role: "gestor" | "usuario";
+  roleLabel: string;
   initials: string;
 }
 
@@ -41,10 +43,17 @@ interface ApiUser {
   role: "gestor" | "usuario";
 }
 
+// Mapeia roles do backend para rótulos legíveis no frontend
+const formatRoleLabel = (role: "gestor" | "usuario"): string => {
+  return role === "gestor" ? "Gestor" : "Usuário";
+};
+
 const toAuthUser = (u: ApiUser): AuthUser => ({
+  id: u.id,
   name: u.name,
   email: u.email,
-  role: u.role === "gestor" ? "Gestor" : "Usuário",
+  role: u.role,
+  roleLabel: formatRoleLabel(u.role),
   initials: u.name.trim()[0]?.toUpperCase() ?? "?",
 });
 
@@ -56,10 +65,11 @@ interface AuthResponse {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(loadUser);
 
-  // Revalida a sessão no servidor; token expirado ou inválido encerra a sessão
+  // Revalida a sessão no servidor
   useEffect(() => {
     if (!getToken()) return;
-    api<{ user: ApiUser }>("/api/auth/me")
+    // Rota ajustada para /auth/me (evita /api/api)
+    api<{ user: ApiUser }>("/auth/me")
       .then(({ user }) => {
         const authUser = toAuthUser(user);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
@@ -88,11 +98,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Rotas ajustadas para corresponder às rotas declaradas no Fastify (authRoutes)
   const login = (email: string, password: string) =>
-    authenticate("/api/auth/login", { email, password });
+    authenticate("/auth/login", { email, password });
 
   const register = (name: string, email: string, password: string) =>
-    authenticate("/api/auth/cadastro", { name, email, password });
+    authenticate("/auth/cadastro", { name, email, password });
 
   function logout() {
     saveSession(null, null);
