@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   Check,
+  Eye,
+  EyeOff,
   KeyRound,
   Moon,
   Pencil,
@@ -195,7 +197,32 @@ function SettingsPage() {
 }
 
 function PasswordField({ id, label, minLength }: { id: string; label: string; minLength?: number }) {
-  return <div className="space-y-2"><Label htmlFor={id}>{label}</Label><Input id={id} name={id} type="password" minLength={minLength} required /></div>;
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <Input
+          id={id}
+          name={id}
+          type={visible ? "text" : "password"}
+          minLength={minLength}
+          required
+          className="pr-10"
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((current) => !current)}
+          aria-label={visible ? `Ocultar ${label.toLowerCase()}` : `Mostrar ${label.toLowerCase()}`}
+          title={visible ? "Ocultar senha" : "Mostrar senha"}
+          className="absolute right-0 top-0 flex h-9 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+        >
+          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function UserDialog({ mode, user, onClose, onSaved }: { mode: "create" | "edit" | null; user: ManagedUser | null; onClose: () => void; onSaved: () => Promise<void> }) {
