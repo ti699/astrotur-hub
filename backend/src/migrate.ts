@@ -14,6 +14,14 @@ async function main() {
       created_at timestamptz NOT NULL DEFAULT now()
     );
     ALTER TABLE users ADD COLUMN IF NOT EXISTS active boolean NOT NULL DEFAULT true;
+    CREATE TABLE IF NOT EXISTS sso_tickets (
+      ticket_hash char(64) PRIMARY KEY,
+      target_system text NOT NULL CHECK (target_system IN ('patrimonio', 'helpdesk')),
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at timestamptz NOT NULL,
+      is_used boolean NOT NULL DEFAULT false
+    );
+    CREATE INDEX IF NOT EXISTS sso_tickets_expires_at_idx ON sso_tickets (expires_at);
   `);
 
   const { rows } = await pool.query<{ total: number }>("SELECT count(*)::int AS total FROM users");

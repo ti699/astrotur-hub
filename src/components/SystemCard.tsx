@@ -1,7 +1,8 @@
 import { ArrowRight, ArrowUpRight, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SystemMetrics } from "@/data/mockData";
-import { openSystem } from "@/config/systems";
+import { openSystem, type SystemConfig } from "@/config/systems";
+import { toast } from "sonner";
 
 interface SystemCardProps {
   name: string;
@@ -9,7 +10,7 @@ interface SystemCardProps {
   description: string;
   icon: LucideIcon;
   metrics: SystemMetrics[];
-  url: string;
+  system: Pick<SystemConfig, "key" | "url">;
   ctaLabel: string;
   accent?: "primary" | "dark";
 }
@@ -20,7 +21,7 @@ export function SystemCard({
   description,
   icon: Icon,
   metrics,
-  url,
+  system,
   ctaLabel,
   accent = "primary",
 }: SystemCardProps) {
@@ -35,12 +36,7 @@ export function SystemCard({
           : "border-border bg-card text-foreground",
       )}
     >
-      <span
-        className={cn(
-          "absolute inset-x-0 top-0 h-1",
-          dark ? "bg-primary" : "bg-primary/80",
-        )}
-      />
+      <span className={cn("absolute inset-x-0 top-0 h-1", dark ? "bg-primary" : "bg-primary/80")} />
 
       <div className="flex items-start justify-between gap-4">
         <div
@@ -64,12 +60,7 @@ export function SystemCard({
       </div>
 
       <h3 className="mt-6 text-2xl font-bold tracking-tight">{name}</h3>
-      <p
-        className={cn(
-          "mt-1 text-sm font-medium",
-          dark ? "text-primary" : "text-primary",
-        )}
-      >
+      <p className={cn("mt-1 text-sm font-medium", dark ? "text-primary" : "text-primary")}>
         {category}
       </p>
       <p
@@ -103,7 +94,13 @@ export function SystemCard({
       </dl>
 
       <button
-        onClick={() => openSystem(url)}
+        onClick={() => {
+          void openSystem(system).catch((error: unknown) => {
+            toast.error(
+              error instanceof Error ? error.message : "Não foi possível acessar o sistema.",
+            );
+          });
+        }}
         className={cn(
           "mt-7 inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-200 active:scale-[0.98]",
           dark

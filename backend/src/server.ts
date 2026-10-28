@@ -9,30 +9,37 @@ import { authRoutes } from "./routes/auth.js";
 import { userRoutes } from "./routes/users.js";
 import { meRoutes } from "./routes/me.js";
 import { metricsRoutes } from "./routes/metrics.js";
+import { ssoRoutes } from "./routes/sso.js";
 import type { Role } from "./db.js";
 
 // 1. Amplia a interface do JWT para trafegar sub, role, name e email
 declare module "@fastify/jwt" {
   interface FastifyJWT {
-    payload: { 
-      sub: string; 
-      role: Role | string; 
-      name?: string; 
-      email?: string; 
+    payload: {
+      sub: string;
+      role: Role | string;
+      name?: string;
+      email?: string;
     };
-    user: { 
-      sub: string; 
-      role: Role | string; 
-      name?: string; 
-      email?: string; 
+    user: {
+      sub: string;
+      role: Role | string;
+      name?: string;
+      email?: string;
     };
   }
 }
 
 declare module "fastify" {
   interface FastifyInstance {
-    authenticate: (req: import("fastify").FastifyRequest, reply: import("fastify").FastifyReply) => Promise<void>;
-    requireGestor: (req: import("fastify").FastifyRequest, reply: import("fastify").FastifyReply) => Promise<void>;
+    authenticate: (
+      req: import("fastify").FastifyRequest,
+      reply: import("fastify").FastifyReply,
+    ) => Promise<void>;
+    requireGestor: (
+      req: import("fastify").FastifyRequest,
+      reply: import("fastify").FastifyReply,
+    ) => Promise<void>;
   }
 }
 
@@ -70,7 +77,7 @@ app.decorate("requireGestor", async (req, reply) => {
   } catch {
     return reply.code(401).send({ error: "Não autenticado." });
   }
-  
+
   const role = req.user.role?.toLowerCase();
   if (role !== "gestor" && role !== "master") {
     return reply.code(403).send({ error: "Acesso restrito a gestores e administradores." });
@@ -84,13 +91,16 @@ app.get("/api/health", async () => {
 
 // 3. Registro dos Plugins com seus respectivos prefixos
 await app.register(authRoutes, { prefix: "/api/auth" });
+await app.register(ssoRoutes, { prefix: "/api/sso" });
 await app.register(meRoutes, { prefix: "/api/me" });
 await app.register(userRoutes, { prefix: "/api/admin/users" });
 await app.register(metricsRoutes, { prefix: "/api/metrics" });
 
 app.setErrorHandler((err: Error & { statusCode?: number; validation?: unknown }, req, reply) => {
   if (err.name === "ZodError") {
-    return reply.code(400).send({ error: "Dados inválidos.", details: (err as unknown as { issues: unknown }).issues });
+    return reply
+      .code(400)
+      .send({ error: "Dados inválidos.", details: (err as unknown as { issues: unknown }).issues });
   }
   req.log.error(err);
   const status = err.statusCode ?? 500;

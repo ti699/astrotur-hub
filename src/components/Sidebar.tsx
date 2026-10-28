@@ -3,6 +3,7 @@ import { Home, ShieldCheck, LifeBuoy, ArrowUpRight, X, LogOut, Settings } from "
 import { SYSTEMS, openSystem } from "@/config/systems";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 
 const navItems = [
   { label: "Início", to: "/", icon: Home },
@@ -81,7 +82,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <button
                 key={config.key}
                 onClick={() => {
-                  openSystem(config.url);
+                  void openSystem(config).catch((error: unknown) => {
+                    toast.error(
+                      error instanceof Error
+                        ? error.message
+                        : "Não foi possível acessar o sistema.",
+                    );
+                  });
                   onNavigate?.();
                 }}
                 className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-sidebar-foreground/75 transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -102,7 +109,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               {user.initials}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-xs font-semibold text-sidebar-accent-foreground">{user.name}</p>
+              <p className="truncate text-xs font-semibold text-sidebar-accent-foreground">
+                {user.name}
+              </p>
               <p className="truncate text-[11px] text-sidebar-foreground/55">{user.roleLabel}</p>
             </div>
           </div>
@@ -114,9 +123,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <LogOut className="h-4 w-4" />
           Sair
         </button>
-        <p className="px-3 text-[11px] text-sidebar-foreground/40">
-          Astrotur Viagens · Desde 1991
-        </p>
+        <p className="px-3 text-[11px] text-sidebar-foreground/40">Astrotur Viagens · Desde 1991</p>
       </div>
     </div>
   );

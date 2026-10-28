@@ -54,8 +54,8 @@ function Dashboard() {
             Olá, {user?.name ?? "Usuário"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Bem-vindo ao Portal Corporativo Astrotur. Acesse rapidamente os
-            sistemas e acompanhe informações da nossa operação.
+            Bem-vindo ao Portal Corporativo Astrotur. Acesse rapidamente os sistemas e acompanhe
+            informações da nossa operação.
           </p>
         </header>
 
@@ -70,7 +70,7 @@ function Dashboard() {
               description={SYSTEMS.patrimonio.description}
               icon={ShieldCheck}
               metrics={patrimonioMetrics}
-              url={SYSTEMS.patrimonio.url}
+              system={SYSTEMS.patrimonio}
               ctaLabel={SYSTEMS.patrimonio.ctaLabel}
               accent="primary"
             />
@@ -80,13 +80,12 @@ function Dashboard() {
               description={SYSTEMS.helpdesk.description}
               icon={LifeBuoy}
               metrics={helpdeskMetrics}
-              url={SYSTEMS.helpdesk.url}
+              system={SYSTEMS.helpdesk}
               ctaLabel={SYSTEMS.helpdesk.ctaLabel}
               accent="dark"
             />
           </div>
         </section>
-
 
         <QuickAccess />
       </div>
