@@ -9,6 +9,14 @@ export default defineConfig({
   nitro: {
     preset: "node-server",
     routeRules: {
+      // Proxy para a API / Autenticação (resolve o POST 404 na porta 3002)
+      '/api/**': {
+        proxy: 'http://187.127.0.219:3002/api/**',
+      },
+      '/auth/**': {
+        proxy: 'http://187.127.0.219:3002/auth/**',
+      },
+      // Proxy para o módulo Patrimônio
       '/patrimonio': {
         proxy: 'http://187.127.0.219:8081/patrimonio',
       },
