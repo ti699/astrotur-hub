@@ -1,6 +1,7 @@
 const env = import.meta.env as Record<string, string | undefined>;
 
-export const API_URL = (env["VITE_API_URL"] ?? "http://187.127.0.219:3002").replace(/\/$/, "");
+// Altere esta linha: usa URL relativa para passar pelo proxy do Nitro (porta 8080)
+export const API_URL = (env["VITE_API_URL"] ?? "").replace(/\/$/, "");
 
 const TOKEN_KEY = "astrotur_token";
 
