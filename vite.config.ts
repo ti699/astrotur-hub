@@ -14,5 +14,10 @@ export default defineConfig({
   },
   nitro: {
     preset: "node-server",
+    routeRules: {
+      '/patrimonio/**': {
+        proxy: 'http://patrimonio_web:8081/patrimonio/**',
+      },
+    },
   },
 });
