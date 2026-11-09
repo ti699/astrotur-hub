@@ -18,6 +18,10 @@ API Fastify + TypeScript + PostgreSQL.
 
 Autenticação: header `Authorization: Bearer <token>`.
 
+O token de login permanece válido por 30 dias por padrão, inclusive depois de fechar
+o navegador. Configure `JWT_EXPIRES_IN` no ambiente do backend para alterar esse prazo;
+sair da conta remove o token salvo no navegador.
+
 ### Integração SSO dos sistemas de destino
 
 Configure `PATRIMONIO_SSO_CLIENT_SECRET` e `HELPDESK_SSO_CLIENT_SECRET` no ambiente

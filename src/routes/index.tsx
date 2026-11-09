@@ -6,16 +6,12 @@ import { QuickAccess } from "@/components/QuickAccess";
 import { useEffect, useState } from "react";
 import { SYSTEMS } from "@/config/systems";
 import type { SystemMetrics } from "@/data/mockData";
-import { api } from "@/lib/api";
+import { api, getToken } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
-  // ADICIONE ESTE BLOCO AQUI (antes de head e component)
   beforeLoad: () => {
-    // Verifica se o token existe no localStorage (ou onde seu app guarda a sessão)
-    const token = localStorage.getItem("token"); // Ajuste o nome "token" se sua chave for diferente (ex: "auth_token", "jwt")
-
-    if (!token) {
+    if (typeof window !== "undefined" && !getToken()) {
       throw redirect({
         to: "/login",
       });
