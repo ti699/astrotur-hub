@@ -1,5 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { LifeBuoy, ShieldCheck } from "lucide-react";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { LifeBuoy, Loader2, ShieldCheck } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { SystemCard } from "@/components/SystemCard";
 import { QuickAccess } from "@/components/QuickAccess";
@@ -38,11 +38,18 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState<{
     patrimonio: SystemMetrics[];
     helpdesk: SystemMetrics[];
   }>({ patrimonio: [], helpdesk: [] });
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      void navigate({ to: "/login", replace: true });
+    }
+  }, [isLoading, navigate, user]);
 
   useEffect(() => {
     if (!user) return;
@@ -50,6 +57,15 @@ function Dashboard() {
       .then(setMetrics)
       .catch(() => setMetrics({ patrimonio: [], helpdesk: [] }));
   }, [user]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center" role="status">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="sr-only">Validando sessão...</span>
+      </div>
+    );
+  }
 
   const patrimonioMetrics = metrics.patrimonio;
   const helpdeskMetrics = metrics.helpdesk;
