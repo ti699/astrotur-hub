@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { LifeBuoy, ShieldCheck } from "lucide-react";
 import { PortalLayout } from "@/components/PortalLayout";
 import { SystemCard } from "@/components/SystemCard";
@@ -10,6 +10,18 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
+  // ADICIONE ESTE BLOCO AQUI (antes de head e component)
+  beforeLoad: () => {
+    // Verifica se o token existe no localStorage (ou onde seu app guarda a sessão)
+    const token = localStorage.getItem("token"); // Ajuste o nome "token" se sua chave for diferente (ex: "auth_token", "jwt")
+
+    if (!token) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
+
   head: () => ({
     meta: [
       { title: "Portal Astrotur — Portal Corporativo" },
