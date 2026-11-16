@@ -21,6 +21,7 @@ interface AuthContextValue {
     password: string,
     setor: string,
   ) => Promise<{ ok: boolean; error?: string }>;
+  updateUser: (user: AuthUser) => void;
   logout: () => void;
 }
 
@@ -117,13 +118,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = (name: string, email: string, password: string, setor: string) =>
     authenticate("/auth/cadastro", { name, email, password, setor });
 
+  function updateUser(updatedUser: AuthUser) {
+    saveSession(updatedUser, getToken());
+    setUser(updatedUser);
+  }
+
   function logout() {
     saveSession(null, null);
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

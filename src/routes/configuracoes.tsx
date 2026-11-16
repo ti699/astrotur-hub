@@ -37,7 +37,7 @@ type Role = "gestor" | "usuario";
 type ManagedUser = { id: string; name: string; email: string; role: Role; setor: string; active: boolean };
 
 function SettingsPage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [profile, setProfile] = useState({
     name: user?.name ?? "",
@@ -75,8 +75,23 @@ function SettingsPage() {
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!user) {
+      toast.error("Sessão não encontrada.");
+      return;
+    }
+
     try {
-      await api("/api/me/profile", { method: "PUT", body: JSON.stringify(profile) });
+      const { user: updatedUser } = await api<{ user: Pick<ManagedUser, "name" | "email" | "setor" | "role"> }>(
+        "/api/me/profile",
+        { method: "PUT", body: JSON.stringify(profile) },
+      );
+      updateUser({
+        ...user,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        setor: updatedUser.setor,
+        initials: updatedUser.name.trim()[0]?.toUpperCase() ?? "?",
+      });
       toast.success("Perfil atualizado com sucesso.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível atualizar o perfil.");
@@ -85,7 +100,8 @@ function SettingsPage() {
 
   async function changePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       await api("/api/me/password", {
         method: "PUT",
@@ -95,7 +111,7 @@ function SettingsPage() {
           confirmPassword: form.get("confirmPassword"),
         }),
       });
-      event.currentTarget.reset();
+      formElement.reset();
       toast.success("Senha alterada com sucesso.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível alterar a senha.");
