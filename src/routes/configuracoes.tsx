@@ -34,12 +34,16 @@ export const Route = createFileRoute("/configuracoes")({
 });
 
 type Role = "gestor" | "usuario";
-type ManagedUser = { id: string; name: string; email: string; role: Role; active: boolean };
+type ManagedUser = { id: string; name: string; email: string; role: Role; setor: string; active: boolean };
 
 function SettingsPage() {
   const { user } = useAuth();
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [profile, setProfile] = useState({ name: user?.name ?? "", email: user?.email ?? "" });
+  const [profile, setProfile] = useState({
+    name: user?.name ?? "",
+    email: user?.email ?? "",
+    setor: user?.setor ?? "",
+  });
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [userDialog, setUserDialog] = useState<"create" | "edit" | null>(null);
   const [editing, setEditing] = useState<ManagedUser | null>(null);
@@ -53,7 +57,7 @@ function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    if (user) setProfile({ name: user.name, email: user.email });
+    if (user) setProfile({ name: user.name, email: user.email, setor: user.setor });
   }, [user]);
 
   useEffect(() => {
@@ -155,6 +159,7 @@ function SettingsPage() {
                 <form onSubmit={saveProfile} className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2"><Label htmlFor="name">Nome</Label><Input id="name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} required /></div>
                   <div className="space-y-2"><Label htmlFor="email">E-mail</Label><Input id="email" type="email" value={profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })} required /></div>
+                  <div className="space-y-2"><Label htmlFor="profile-setor">Setor</Label><Input id="profile-setor" value={profile.setor} onChange={(e) => setProfile({ ...profile, setor: e.target.value })} maxLength={120} required /></div>
                   <div className="md:col-span-2"><Button type="submit">Salvar alterações</Button></div>
                 </form>
               </CardContent></Card>
@@ -232,8 +237,8 @@ function UserDialog({ mode, user, onClose, onSaved }: { mode: "create" | "edit" 
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const body = mode === "create"
-      ? { name: form.get("name"), email: form.get("email"), password: form.get("password"), role: form.get("role") }
-      : { name: form.get("name"), email: form.get("email"), is_active: form.get("is_active") === "true" };
+      ? { name: form.get("name"), email: form.get("email"), password: form.get("password"), role: form.get("role"), setor: form.get("setor") }
+      : { name: form.get("name"), email: form.get("email"), setor: form.get("setor"), is_active: form.get("is_active") === "true" };
     setSaving(true);
     try {
       await api(mode === "create" ? "/api/admin/users" : `/api/admin/users/${user?.id}`, { method: mode === "create" ? "POST" : "PUT", body: JSON.stringify(body) });
@@ -243,5 +248,62 @@ function UserDialog({ mode, user, onClose, onSaved }: { mode: "create" | "edit" 
       toast.error(error instanceof Error ? error.message : "Não foi possível salvar o usuário.");
     } finally { setSaving(false); }
   }
-  return <Dialog open={Boolean(mode)} onOpenChange={(open) => !open && onClose()}><DialogContent><DialogHeader><DialogTitle>{mode === "create" ? "Criar usuário" : "Editar usuário"}</DialogTitle></DialogHeader><form onSubmit={submit} className="space-y-4"><div className="space-y-2"><Label htmlFor="managed-name">Nome</Label><Input id="managed-name" name="name" defaultValue={user?.name} required /></div><div className="space-y-2"><Label htmlFor="managed-email">E-mail</Label><Input id="managed-email" name="email" type="email" defaultValue={user?.email} required /></div>{mode === "create" ? <><div className="space-y-2"><Label htmlFor="managed-password">Senha inicial</Label><Input id="managed-password" name="password" type="password" minLength={8} required /></div><div className="space-y-2"><Label>Papel</Label><Select name="role" defaultValue="usuario"><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="gestor">Gestor</SelectItem><SelectItem value="usuario">Usuário</SelectItem></SelectContent></Select></div></> : <div className="space-y-2"><Label>Status</Label><Select name="is_active" defaultValue={user?.active ? "true" : "false"}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="true">Ativo</SelectItem><SelectItem value="false">Inativo</SelectItem></SelectContent></Select></div>}<DialogFooter><Button type="button" variant="outline" onClick={onClose}>Cancelar</Button><Button type="submit" disabled={saving}>{saving ? "Salvando..." : <><Check className="mr-2 h-4 w-4" />Salvar</>}</Button></DialogFooter></form></DialogContent></Dialog>;
+  return (
+    <Dialog open={Boolean(mode)} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{mode === "create" ? "Criar usuário" : "Editar usuário"}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="managed-name">Nome</Label>
+            <Input id="managed-name" name="name" defaultValue={user?.name} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="managed-email">E-mail</Label>
+            <Input id="managed-email" name="email" type="email" defaultValue={user?.email} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="managed-setor">Setor</Label>
+            <Input id="managed-setor" name="setor" defaultValue={user?.setor} maxLength={120} required />
+          </div>
+          {mode === "create" ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="managed-password">Senha inicial</Label>
+                <Input id="managed-password" name="password" type="password" minLength={8} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Papel</Label>
+                <Select name="role" defaultValue="usuario">
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gestor">Gestor</SelectItem>
+                    <SelectItem value="usuario">Usuário</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select name="is_active" defaultValue={user?.active ? "true" : "false"}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="true">Ativo</SelectItem>
+                  <SelectItem value="false">Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? "Salvando..." : <><Check className="mr-2 h-4 w-4" />Salvar</>}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }

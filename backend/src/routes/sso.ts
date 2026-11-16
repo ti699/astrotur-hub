@@ -91,6 +91,7 @@ export async function ssoRoutes(fastify: FastifyInstance) {
       name: string;
       email: string;
       role: string;
+      setor: string;
     }>(
       `WITH consumed AS (
          UPDATE sso_tickets
@@ -101,7 +102,7 @@ export async function ssoRoutes(fastify: FastifyInstance) {
            AND expires_at > now()
          RETURNING user_id
        )
-       SELECT users.id, users.name, users.email, users.role
+       SELECT users.id, users.name, users.email, users.role, users.setor
        FROM consumed
        JOIN users ON users.id = consumed.user_id
        WHERE users.active = true`,

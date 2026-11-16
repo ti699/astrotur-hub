@@ -2,10 +2,12 @@ import type { FastifyPluginAsync } from "fastify";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { pool } from "../db.js";
+import { syncUserFromHub } from "../user-sync.js";
 
 const profileSchema = z.object({
   name: z.string().trim().min(2).max(120),
   email: z.string().trim().toLowerCase().email(),
+  setor: z.string().trim().min(1).max(120),
 });
 
 const passwordSchema = z
@@ -19,7 +21,7 @@ const passwordSchema = z
     path: ["confirmPassword"],
   });
 
-const profileColumns = "id, name, email, role, active, created_at";
+const profileColumns = "id, name, email, role, setor, active, created_at";
 
 export const meRoutes: FastifyPluginAsync = async (app) => {
   app.addHook("preHandler", app.authenticate);
@@ -36,11 +38,12 @@ export const meRoutes: FastifyPluginAsync = async (app) => {
     const data = profileSchema.parse(req.body);
     try {
       const { rows } = await pool.query(
-        `UPDATE users SET name = $1, email = $2 WHERE id = $3
+        `UPDATE users SET name = $1, email = $2, setor = $3 WHERE id = $4
          RETURNING ${profileColumns}`,
-        [data.name, data.email, req.user.sub],
+        [data.name, data.email, data.setor, req.user.sub],
       );
       if (!rows[0]) return reply.code(404).send({ error: "Usuário não encontrado." });
+      syncUserFromHub(rows[0], req.log);
       return { user: rows[0] };
     } catch (error) {
       if ((error as { code?: string }).code === "23505") {

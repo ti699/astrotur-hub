@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
+import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -24,6 +25,7 @@ function LoginPage() {
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
+  const [forgotError, setForgotError] = useState("");
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -38,14 +40,23 @@ function LoginPage() {
     }
   }
 
-  function handleForgot(e: React.FormEvent) {
+  async function handleForgot(e: React.FormEvent) {
     e.preventDefault();
+    setForgotError("");
     setLoading(true);
-    // TODO: integrar com API de recuperação de senha
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await api("/auth/password-reset/request", {
+        method: "POST",
+        body: JSON.stringify({ email: forgotEmail }),
+      });
       setForgotSent(true);
-    }, 1000);
+    } catch (error) {
+      setForgotError(
+        error instanceof Error ? error.message : "Não foi possível solicitar a redefinição.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -56,13 +67,9 @@ function LoginPage() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Lock className="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Portal Astrotur
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Portal Astrotur</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "login"
-              ? "Acesse sua conta para continuar"
-              : "Recuperação de senha"}
+            {mode === "login" ? "Acesse sua conta para continuar" : "Recuperação de senha"}
           </p>
         </div>
 
@@ -82,9 +89,7 @@ function LoginPage() {
                     autoComplete="email"
                     className="pl-9"
                     value={loginForm.email}
-                    onChange={(e) =>
-                      setLoginForm((f) => ({ ...f, email: e.target.value }))
-                    }
+                    onChange={(e) => setLoginForm((f) => ({ ...f, email: e.target.value }))}
                   />
                 </div>
               </div>
@@ -101,9 +106,7 @@ function LoginPage() {
                     autoComplete="current-password"
                     className="pl-9 pr-9"
                     value={loginForm.password}
-                    onChange={(e) =>
-                      setLoginForm((f) => ({ ...f, password: e.target.value }))
-                    }
+                    onChange={(e) => setLoginForm((f) => ({ ...f, password: e.target.value }))}
                   />
                   <button
                     type="button"
@@ -112,11 +115,7 @@ function LoginPage() {
                     tabIndex={-1}
                     aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
@@ -150,11 +149,10 @@ function LoginPage() {
                     <Mail className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">E-mail enviado!</p>
+                    <p className="font-semibold text-foreground">Solicitação recebida</p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Verifique sua caixa de entrada em{" "}
-                      <span className="font-medium text-foreground">{forgotEmail}</span>{" "}
-                      para redefinir sua senha.
+                      Se esse endereço estiver cadastrado, você receberá um link para redefinir sua
+                      senha. O link expira em 30 minutos.
                     </p>
                   </div>
                   <Button
@@ -172,8 +170,7 @@ function LoginPage() {
               ) : (
                 <form onSubmit={handleForgot} className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    Informe o e-mail cadastrado e enviaremos as instruções para
-                    redefinir sua senha.
+                    Informe o e-mail cadastrado e enviaremos as instruções para redefinir sua senha.
                   </p>
                   <div className="space-y-1.5">
                     <Label htmlFor="forgot-email">E-mail</Label>
@@ -191,6 +188,11 @@ function LoginPage() {
                       />
                     </div>
                   </div>
+                  {forgotError && (
+                    <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                      {forgotError}
+                    </p>
+                  )}
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Enviar instruções

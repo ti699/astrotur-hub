@@ -9,6 +9,7 @@ export interface UserRow {
   email: string;
   password_hash: string;
   role: Role;
+  setor: string;
   active: boolean;
   created_at: Date;
 }

@@ -5,6 +5,7 @@ export interface AuthUser {
   id?: string;
   name: string;
   email: string;
+  setor: string;
   role: "gestor" | "usuario";
   roleLabel: string;
   initials: string;
@@ -18,6 +19,7 @@ interface AuthContextValue {
     name: string,
     email: string,
     password: string,
+    setor: string,
   ) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
 }
@@ -37,6 +39,7 @@ interface ApiUser {
   name: string;
   email: string;
   role: "gestor" | "usuario";
+  setor: string;
 }
 
 // Mapeia roles do backend para rótulos legíveis no frontend
@@ -48,6 +51,7 @@ const toAuthUser = (u: ApiUser): AuthUser => ({
   id: u.id,
   name: u.name,
   email: u.email,
+  setor: u.setor,
   role: u.role,
   roleLabel: formatRoleLabel(u.role),
   initials: u.name.trim()[0]?.toUpperCase() ?? "?",
@@ -110,8 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (email: string, password: string) =>
     authenticate("/auth/login", { email, password });
 
-  const register = (name: string, email: string, password: string) =>
-    authenticate("/auth/cadastro", { name, email, password });
+  const register = (name: string, email: string, password: string, setor: string) =>
+    authenticate("/auth/cadastro", { name, email, password, setor });
 
   function logout() {
     saveSession(null, null);

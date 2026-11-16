@@ -7,6 +7,11 @@ const DEFAULT_ORIGINS = [
   "http://localhost:3000",
 ];
 
+const optionalEnv = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.string().optional(),
+);
+
 const schema = z
   .object({
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
@@ -21,6 +26,18 @@ const schema = z
     ADMIN_PASSWORD: z.string().min(8).optional(),
     PATRIMONIO_API_URL: z.string().optional(),
     HELPDESK_API_URL: z.string().optional(),
+    SMTP_HOST: optionalEnv,
+    SMTP_PORT: z.coerce.number().int().positive().default(587),
+    SMTP_SECURE: z
+      .preprocess(
+        (value) => (value === "" ? undefined : value),
+        z.enum(["true", "false"]).default("false"),
+      )
+      .transform((value) => value === "true"),
+    SMTP_USER: optionalEnv,
+    SMTP_PASSWORD: optionalEnv,
+    SMTP_FROM: optionalEnv,
+    FRONTEND_URL: optionalEnv,
     PATRIMONIO_SSO_CLIENT_SECRET: z.preprocess(
       (value) => (value === "" ? undefined : value),
       z.string().min(32, "PATRIMONIO_SSO_CLIENT_SECRET deve ter ao menos 32 caracteres").optional(),

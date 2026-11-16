@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from "fastify";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { pool } from "../db.js";
+import { syncUserFromHub } from "../user-sync.js";
 
 const idParam = z.object({ id: z.string().uuid() });
 
@@ -10,6 +11,7 @@ const createSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8).max(128),
   role: z.enum(["gestor", "usuario"]).default("usuario"),
+  setor: z.string().trim().min(1).max(120),
 });
 
 const updateSchema = z
@@ -18,9 +20,10 @@ const updateSchema = z
     email: z.string().trim().toLowerCase().email(),
     is_active: z.boolean(),
   })
-  .partial();
+  .partial()
+  .extend({ setor: z.string().trim().min(1).max(120) });
 
-const columns = "id, name, email, role, active, created_at";
+const columns = "id, name, email, role, setor, active, created_at";
 
 export const userRoutes: FastifyPluginAsync = async (app) => {
   app.addHook("preHandler", app.requireGestor);
@@ -31,14 +34,15 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post("/", async (req, reply) => {
-    const { name, email, password, role } = createSchema.parse(req.body);
+    const { name, email, password, role, setor } = createSchema.parse(req.body);
     const hash = await bcrypt.hash(password, 12);
     try {
       const { rows } = await pool.query(
-        `INSERT INTO users (name, email, password_hash, role)
-         VALUES ($1, $2, $3, $4) RETURNING ${columns}`,
-        [name, email, hash, role],
+        `INSERT INTO users (name, email, password_hash, role, setor)
+         VALUES ($1, $2, $3, $4, $5) RETURNING ${columns}`,
+        [name, email, hash, role, setor],
       );
+      syncUserFromHub(rows[0], req.log);
       return reply.code(201).send({ user: rows[0] });
     } catch (err) {
       if ((err as { code?: string }).code === "23505") {
@@ -61,6 +65,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
     if (data.name !== undefined) add("name", data.name);
     if (data.email !== undefined) add("email", data.email);
     if (data.is_active !== undefined) add("active", data.is_active);
+    add("setor", data.setor);
     if (sets.length === 0) return reply.code(400).send({ error: "Nada para atualizar." });
 
     values.push(id);
@@ -77,6 +82,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
       throw error;
     }
     if (!rows[0]) return reply.code(404).send({ error: "Usuário não encontrado." });
+    syncUserFromHub(rows[0], req.log);
     return { user: rows[0] };
   });
 
@@ -98,6 +104,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
       [role, id],
     );
     if (!rows[0]) return reply.code(404).send({ error: "Usuário não encontrado." });
+    syncUserFromHub(rows[0], req.log);
     return { user: rows[0] };
   });
 

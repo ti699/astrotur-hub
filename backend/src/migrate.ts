@@ -11,9 +11,13 @@ async function main() {
       email text NOT NULL UNIQUE,
       password_hash text NOT NULL,
       role text NOT NULL DEFAULT 'usuario' CHECK (role IN ('gestor','usuario')),
+      setor text,
       created_at timestamptz NOT NULL DEFAULT now()
     );
     ALTER TABLE users ADD COLUMN IF NOT EXISTS active boolean NOT NULL DEFAULT true;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS setor text;
+    UPDATE users SET setor = 'Não informado' WHERE setor IS NULL OR btrim(setor) = '';
+    ALTER TABLE users ALTER COLUMN setor SET NOT NULL;
     CREATE TABLE IF NOT EXISTS sso_tickets (
       ticket_hash char(64) PRIMARY KEY,
       target_system text NOT NULL CHECK (target_system IN ('patrimonio', 'helpdesk')),
@@ -22,6 +26,17 @@ async function main() {
       is_used boolean NOT NULL DEFAULT false
     );
     CREATE INDEX IF NOT EXISTS sso_tickets_expires_at_idx ON sso_tickets (expires_at);
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      token_hash char(64) PRIMARY KEY,
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at timestamptz NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      used_at timestamptz
+    );
+    CREATE INDEX IF NOT EXISTS password_reset_tokens_user_id_idx
+      ON password_reset_tokens (user_id);
+    CREATE INDEX IF NOT EXISTS password_reset_tokens_expires_at_idx
+      ON password_reset_tokens (expires_at);
   `);
 
   const { rows } = await pool.query<{ total: number }>("SELECT count(*)::int AS total FROM users");
@@ -31,8 +46,8 @@ async function main() {
     const password = config.ADMIN_PASSWORD ?? randomBytes(12).toString("base64url");
     const hash = await bcrypt.hash(password, 12);
     await pool.query(
-      `INSERT INTO users (name, email, password_hash, role)
-       VALUES ('Administrador', $1, $2, 'gestor')`,
+      `INSERT INTO users (name, email, password_hash, role, setor)
+       VALUES ('Administrador', $1, $2, 'gestor', 'Não informado')`,
       [config.ADMIN_EMAIL.toLowerCase(), hash],
     );
     console.log(`Usuário admin criado: ${config.ADMIN_EMAIL}`);

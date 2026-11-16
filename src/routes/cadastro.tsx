@@ -17,7 +17,7 @@ function CadastroPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ name: "", email: "", setor: "", password: "", confirm: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -39,7 +39,7 @@ function CadastroPage() {
       return;
     }
     setLoading(true);
-    const result = await register(form.name, form.email, form.password);
+    const result = await register(form.name, form.email, form.password, form.setor);
     setLoading(false);
     if (result.ok) {
       navigate({ to: "/" });
@@ -97,6 +97,19 @@ function CadastroPage() {
                   onChange={set("email")}
                 />
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="setor">Setor</Label>
+              <Input
+                id="setor"
+                type="text"
+                placeholder="Seu setor"
+                maxLength={120}
+                required
+                value={form.setor}
+                onChange={set("setor")}
+              />
             </div>
 
             <div className="space-y-1.5">
