@@ -1,5 +1,6 @@
 import type { FastifyBaseLogger } from "fastify";
 import { config } from "./config.js";
+import { isCorporateEmail } from "./email.js";
 
 interface HubUser {
   name: string;
@@ -9,6 +10,11 @@ interface HubUser {
 }
 
 export function syncUserFromHub(user: HubUser, log: FastifyBaseLogger): void {
+  if (!isCorporateEmail(user.email)) {
+    log.warn({ email: user.email }, "Sincronização bloqueada para e-mail fora dos domínios corporativos.");
+    return;
+  }
+
   const { PATRIMONIO_API_URL, PATRIMONIO_SSO_CLIENT_SECRET } = config;
   if (!PATRIMONIO_API_URL || !PATRIMONIO_SSO_CLIENT_SECRET) return;
 

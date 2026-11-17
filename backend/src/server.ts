@@ -5,6 +5,7 @@ import jwt from "@fastify/jwt";
 import rateLimit from "@fastify/rate-limit";
 import { config, corsOrigins } from "./config.js";
 import { pool } from "./db.js";
+import { CORPORATE_EMAIL_MESSAGE } from "./email.js";
 import { authRoutes } from "./routes/auth.js";
 import { userRoutes } from "./routes/users.js";
 import { meRoutes } from "./routes/me.js";
@@ -98,9 +99,11 @@ await app.register(metricsRoutes, { prefix: "/api/metrics" });
 
 app.setErrorHandler((err: Error & { statusCode?: number; validation?: unknown }, req, reply) => {
   if (err.name === "ZodError") {
+    const issues = (err as Error & { issues: Array<{ message: string }> }).issues;
+    const domainIssue = issues.find((issue) => issue.message === CORPORATE_EMAIL_MESSAGE);
     return reply
       .code(400)
-      .send({ error: "Dados inválidos.", details: (err as unknown as { issues: unknown }).issues });
+      .send({ error: domainIssue?.message ?? "Dados inválidos.", details: issues });
   }
   req.log.error(err);
   const status = err.statusCode ?? 500;

@@ -3,6 +3,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { config } from "../config.js";
 import { pool } from "../db.js";
+import { CORPORATE_EMAIL_MESSAGE, isCorporateEmail } from "../email.js";
 
 const ticketRequestSchema = z.object({
   target_system: z.enum(["patrimonio", "helpdesk"]),
@@ -112,6 +113,9 @@ export async function ssoRoutes(fastify: FastifyInstance) {
     const user = result.rows[0];
     if (!user) {
       return reply.status(401).send({ valid: false, message: "Ticket inválido ou expirado." });
+    }
+    if (!isCorporateEmail(user.email)) {
+      return reply.status(403).send({ valid: false, message: CORPORATE_EMAIL_MESSAGE });
     }
 
     return reply.send({ valid: true, user });

@@ -2,11 +2,19 @@ import type { FastifyPluginAsync } from "fastify";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { pool } from "../db.js";
+import { CORPORATE_EMAIL_MESSAGE, isCorporateEmail } from "../email.js";
 import { syncUserFromHub } from "../user-sync.js";
+
+const corporateEmailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email()
+  .refine(isCorporateEmail, { message: CORPORATE_EMAIL_MESSAGE });
 
 const profileSchema = z.object({
   name: z.string().trim().min(2).max(120),
-  email: z.string().trim().toLowerCase().email(),
+  email: corporateEmailSchema,
   setor: z.string().trim().min(1).max(120),
 });
 

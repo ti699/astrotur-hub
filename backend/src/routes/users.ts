@@ -2,13 +2,20 @@ import type { FastifyPluginAsync } from "fastify";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { pool } from "../db.js";
+import { CORPORATE_EMAIL_MESSAGE, isCorporateEmail } from "../email.js";
 import { syncUserFromHub } from "../user-sync.js";
 
 const idParam = z.object({ id: z.string().uuid() });
+const corporateEmailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email()
+  .refine(isCorporateEmail, { message: CORPORATE_EMAIL_MESSAGE });
 
 const createSchema = z.object({
   name: z.string().trim().min(2).max(120),
-  email: z.string().trim().toLowerCase().email(),
+  email: corporateEmailSchema,
   password: z.string().min(8).max(128),
   role: z.enum(["gestor", "usuario"]).default("usuario"),
   setor: z.string().trim().min(1).max(120),
@@ -17,7 +24,7 @@ const createSchema = z.object({
 const updateSchema = z
   .object({
     name: z.string().trim().min(2).max(120),
-    email: z.string().trim().toLowerCase().email(),
+    email: corporateEmailSchema,
     is_active: z.boolean(),
   })
   .partial()

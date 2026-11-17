@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
+import { CORPORATE_EMAIL_MESSAGE, isCorporateEmail } from "@/lib/corporate-email";
 
 export const Route = createFileRoute("/cadastro")({
   head: () => ({
@@ -36,6 +37,10 @@ function CadastroPage() {
     }
     if (form.password.length < 8) {
       setError("A senha deve ter pelo menos 8 caracteres.");
+      return;
+    }
+    if (!isCorporateEmail(form.email)) {
+      setError(CORPORATE_EMAIL_MESSAGE);
       return;
     }
     setLoading(true);
@@ -89,7 +94,7 @@ function CadastroPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="seu@email.com"
+                  placeholder="nome@astroturviagens.com"
                   required
                   autoComplete="email"
                   className="pl-9"
@@ -97,6 +102,7 @@ function CadastroPage() {
                   onChange={set("email")}
                 />
               </div>
+              <p className="text-xs text-muted-foreground">{CORPORATE_EMAIL_MESSAGE}</p>
             </div>
 
             <div className="space-y-1.5">

@@ -5,6 +5,7 @@ import nodemailer from "nodemailer";
 import { z } from "zod";
 import { config } from "../config.js";
 import { pool } from "../db.js";
+import { CORPORATE_EMAIL_MESSAGE, isCorporateEmail } from "../email.js";
 import { syncUserFromHub } from "../user-sync.js";
 
 const resetRequestSchema = z.object({
@@ -39,14 +40,17 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.post("/login", async (req: FastifyRequest, reply: FastifyReply) => {
     const { email, password } = req.body as { email?: string; password?: string };
 
-    if (!email || !password) {
+    if (typeof email !== "string" || !email.trim() || !password) {
       return reply.status(400).send({ message: "E-mail e senha são obrigatórios." });
+    }
+    if (!isCorporateEmail(email)) {
+      return reply.status(403).send({ message: CORPORATE_EMAIL_MESSAGE });
     }
 
     try {
       const { rows } = await pool.query(
         "SELECT id, name, email, password_hash, role, setor FROM users WHERE LOWER(email) = LOWER($1) AND active = true",
-        [email],
+        [email.trim()],
       );
 
       const user = rows[0];
@@ -94,7 +98,8 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     if (
       !name ||
-      !email ||
+      typeof email !== "string" ||
+      !email.trim() ||
       !password ||
       typeof setor !== "string" ||
       !setor.trim() ||
@@ -103,10 +108,18 @@ export async function authRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ message: "Nome, e-mail, senha e setor são obrigatórios." });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!z.string().email().safeParse(normalizedEmail).success) {
+      return reply.status(400).send({ message: "Informe um e-mail válido." });
+    }
+    if (!isCorporateEmail(normalizedEmail)) {
+      return reply.status(400).send({ message: CORPORATE_EMAIL_MESSAGE });
+    }
+
     try {
       const { rows: existing } = await pool.query(
         "SELECT id FROM users WHERE LOWER(email) = LOWER($1)",
-        [email],
+        [normalizedEmail],
       );
 
       if (existing.length > 0) {
@@ -120,7 +133,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
       const { rows } = await pool.query(
         "INSERT INTO users (name, email, password_hash, role, setor) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, role, setor",
-        [name, email, passwordHash, defaultRole, setor.trim()],
+        [name, normalizedEmail, passwordHash, defaultRole, setor.trim()],
       );
 
       const newUser = rows[0];
@@ -260,6 +273,9 @@ export async function authRoutes(fastify: FastifyInstance) {
 
       if (rows.length === 0) {
         return reply.status(401).send({ message: "Usuário não encontrado." });
+      }
+      if (!isCorporateEmail(rows[0].email)) {
+        return reply.status(403).send({ message: CORPORATE_EMAIL_MESSAGE });
       }
 
       return reply.send({ user: rows[0] });

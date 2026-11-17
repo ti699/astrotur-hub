@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { CORPORATE_EMAIL_MESSAGE, isCorporateEmail } from "@/lib/corporate-email";
 
 export const Route = createFileRoute("/configuracoes")({
   head: () => ({ meta: [{ title: "Configurações — Astrotur" }] }),
@@ -75,6 +76,10 @@ function SettingsPage() {
 
   async function saveProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isCorporateEmail(profile.email)) {
+      toast.error(CORPORATE_EMAIL_MESSAGE);
+      return;
+    }
     if (!user) {
       toast.error("Sessão não encontrada.");
       return;
@@ -174,7 +179,7 @@ function SettingsPage() {
               <Card><CardHeader><CardTitle className="flex items-center gap-2"><UserRound className="h-5 w-5 text-primary" />Dados pessoais</CardTitle></CardHeader><CardContent>
                 <form onSubmit={saveProfile} className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2"><Label htmlFor="name">Nome</Label><Input id="name" value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} required /></div>
-                  <div className="space-y-2"><Label htmlFor="email">E-mail</Label><Input id="email" type="email" value={profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })} required /></div>
+                  <div className="space-y-2"><Label htmlFor="email">E-mail</Label><Input id="email" type="email" value={profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })} required /><p className="text-xs text-muted-foreground">{CORPORATE_EMAIL_MESSAGE}</p></div>
                   <div className="space-y-2"><Label htmlFor="profile-setor">Setor</Label><Input id="profile-setor" value={profile.setor} onChange={(e) => setProfile({ ...profile, setor: e.target.value })} maxLength={120} required /></div>
                   <div className="md:col-span-2"><Button type="submit">Salvar alterações</Button></div>
                 </form>
@@ -252,9 +257,14 @@ function UserDialog({ mode, user, onClose, onSaved }: { mode: "create" | "edit" 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") ?? "");
+    if (!isCorporateEmail(email)) {
+      toast.error(CORPORATE_EMAIL_MESSAGE);
+      return;
+    }
     const body = mode === "create"
-      ? { name: form.get("name"), email: form.get("email"), password: form.get("password"), role: form.get("role"), setor: form.get("setor") }
-      : { name: form.get("name"), email: form.get("email"), setor: form.get("setor"), is_active: form.get("is_active") === "true" };
+      ? { name: form.get("name"), email, password: form.get("password"), role: form.get("role"), setor: form.get("setor") }
+      : { name: form.get("name"), email, setor: form.get("setor"), is_active: form.get("is_active") === "true" };
     setSaving(true);
     try {
       await api(mode === "create" ? "/api/admin/users" : `/api/admin/users/${user?.id}`, { method: mode === "create" ? "POST" : "PUT", body: JSON.stringify(body) });
@@ -278,6 +288,7 @@ function UserDialog({ mode, user, onClose, onSaved }: { mode: "create" | "edit" 
           <div className="space-y-2">
             <Label htmlFor="managed-email">E-mail</Label>
             <Input id="managed-email" name="email" type="email" defaultValue={user?.email} required />
+            <p className="text-xs text-muted-foreground">{CORPORATE_EMAIL_MESSAGE}</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="managed-setor">Setor</Label>
