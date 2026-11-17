@@ -1,5 +1,5 @@
 export const CORPORATE_EMAIL_MESSAGE =
-  "Use um e-mail corporativo terminado em @astroturviagens.com, @grupoastrotur.com.br ou @transastro.com.br.";
+  "Use seu e-mail corporativo.";
 
 const corporateEmailDomains = [
   "astroturviagens.com",
