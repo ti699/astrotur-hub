@@ -94,7 +94,7 @@ function CadastroPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="nome@astroturviagens.com"
+                  placeholder="seu@email.com"
                   required
                   autoComplete="email"
                   className="pl-9"
@@ -102,7 +102,6 @@ function CadastroPage() {
                   onChange={set("email")}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">{CORPORATE_EMAIL_MESSAGE}</p>
             </div>
 
             <div className="space-y-1.5">
